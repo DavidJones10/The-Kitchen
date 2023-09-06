@@ -33,14 +33,14 @@ public:
         fractional = delay - static_cast<float>(delayInt);
         readPtr = static_cast<size_t>(delayInt) < max_size ? delayInt : max_size - 1;
     }
-    inline void write(const samleType sample)
+    inline void write(const sampleType sample)
     {
         delLine[writePtr] = sample;
         writePtr = (writePtr - 1 + max_size) % max_size;
     }
     // Outputs interpolated sample from delay line.   
     //   Good if delay time is set in process block
-    inline const sampleType Read(float delSample)
+    inline const sampleType read(float delSample)
     {
         int32_t delayInt = static_cast<int32_t>(delSample);
         float delFraction = delaySample - static_cast<float>(delayInt);
@@ -50,7 +50,7 @@ public:
     }
     // Outputs interpolated sample from delay line.
     //   Best for when delay time is set in different function
-    inline const sampleType Read()
+    inline const sampleType read()
     {
         const sampleType sample1 = delLine[(writePtr + delayInt) % max_size];
         const sampleType sample2 = delLine[(writePtr + delayInt + 1) % max_size];
