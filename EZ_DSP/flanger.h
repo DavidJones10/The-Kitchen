@@ -30,7 +30,7 @@ class Flanger
         void setLfoDepth(float depth);
 
         /** Sets modulation rate
-            \param frequency Hz value between -20 and 20 Hz
+            \param frequency Hz value between 0 and 5Hz
         */
         void setLfoFrequency(float frequency);
 
@@ -40,7 +40,7 @@ class Flanger
         void setDelay(float delayInSamples);
 
         /** Sets internal delay in ms
-            \param delayMS expects value in ms between .1 and 7ms
+            \param delayMS expects value in ms between .1 and 10ms
         */
         void setDelayMs(float delayMS);
 

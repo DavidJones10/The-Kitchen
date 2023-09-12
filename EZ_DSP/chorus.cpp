@@ -1,6 +1,5 @@
 #include "chorus.h"
 #include "dsp.h"
-#include "math.h"
 
 using namespace EZ_DSP;
 // Chorus Engine: use 2 for normal stereo effect in chorus
@@ -74,7 +73,7 @@ float ChorusEngine::processLfo()
 {
     LfoPhase += LfoFreq;
     if (LfoPhase >= 1.f) LfoPhase -= 1.f;
-    return LfoAmp * std::sin(TWOPI_F * LfoPhase);
+    return LfoAmp * sinf(TWOPI_F * LfoPhase);
 }
 
 
@@ -82,7 +81,6 @@ float ChorusEngine::processLfo()
 // Actual stereo chorus
 void Chorus::init(float sample_rate)
 {
-    sampleRate = sample_rate;
     engines[0].init(sample_rate);
     engines[1].init(sample_rate);
     setPan(.25f, .75f);
