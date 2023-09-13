@@ -12,7 +12,7 @@ class ChorusEngine
         ChorusEngine(){}
         ~ChorusEngine(){}
         /** Initializes the chorus engine
-         * @param sample_rate sample rate for internal calculations
+         * \param sample_rate sample rate for internal calculations
          */
         void init(float sample_rate);
         /** Processes chorus engine
