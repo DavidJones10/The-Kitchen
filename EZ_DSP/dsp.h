@@ -37,8 +37,7 @@ namespace EZ_DSP
     inline float fclamp(float in, float min, float max)
     {
         return fmin(fmax(in,min),max);
-    }
-    
+    }    
 
 
 }
