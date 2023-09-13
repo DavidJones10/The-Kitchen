@@ -12,7 +12,11 @@ class DelayLine
 public:
     DelayLine(){}
     ~DelayLine(){}
+    
+    // Initializes delay line
     void Init() {Reset();}
+    
+    // Resets buffer, sets all values to 0
     void Reset() 
     {
         for (size_t i=0; i < max_size; i++)
@@ -22,22 +26,28 @@ public:
         writePtr = 0;
         readPtr = 1;
     }
+    
+    // sets delay for size_t input
     inline void setDelay(size_t delay)
     {
         fracional = 0;
         readPtr = readPtr < max_size ? readPtr : max_size - 1;
     }
+
+    // sets delay for float input
     inline void setDelay(float delay)
     {
         int32_t delayInt = static_cast<int32_t>(delay);
         fractional = delay - static_cast<float>(delayInt);
         readPtr = static_cast<size_t>(delayInt) < max_size ? delayInt : max_size - 1;
     }
+    // Writes sample to delay line
     inline void write(const sampleType sample)
     {
         delLine[writePtr] = sample;
         writePtr = (writePtr - 1 + max_size) % max_size;
     }
+
     // Outputs interpolated sample from delay line.   
     //   Good if delay time is set in process block
     inline const sampleType read(float delSample)
@@ -48,6 +58,7 @@ public:
         const sampleType sample2 = delLine[(writePtr + delayInt + 1) % max_size];
         return lerp(sample1, sample2, delFraction);
     }
+
     // Outputs interpolated sample from delay line.
     //   Best for when delay time is set in different function
     inline const sampleType read()

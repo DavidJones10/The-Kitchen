@@ -7,6 +7,7 @@ void Flanger::init(float sample_rate)
 {
     sampleRate = sample_rate;
     modType = 0;
+    setModMode(0);
     setFeedback(.2f);
     delLine.Init();
     LfoAmp = 0.f;
@@ -37,6 +38,7 @@ void Flanger::setFeedback(float fback)
 
 void Flanger::setDelay(float del)
 {
+    del = fclamp(del, 0.f, 1.f);
     del = (.1f + del * 6.9f);
     setDelayMs(del);
 }
@@ -56,7 +58,7 @@ void Flanger::setLfoDepth(float depth)
 
 void Flanger::setLfoFrequency(float freq)
 {
-    freq = fclamp(freq, -20.f, 20.f);
+    freq = fclamp(freq, .1f, 5.f);
     if (modType==0) LfoFreq = freq/sampleRate; // if SIN modulator
     else                                       // if TRI modulator
     {
@@ -82,7 +84,7 @@ float Flanger::processLfoSin()
 {
     LfoPhase += LfoFreq;
     if (LfoPhase >= 1.f) LfoPhase -= 1.f;
-    return LfoAmp * sin(TWOPI_F * LfoPhase);
+    return LfoAmp * sinf(TWOPI_F * LfoPhase);
 }
 
 float Flanger::processLfoTri()
