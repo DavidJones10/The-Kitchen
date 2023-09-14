@@ -62,7 +62,6 @@ class ChorusEngine
         float LfoAmp;
         float LfoPhase;
         float dryWet;
-        int8_t motType = 0;
         static constexpr int32_t maxDelaySize = 2400; // 50ms max
         DelayLine<float, maxDelaySize> delLine;
         float processLfo();
