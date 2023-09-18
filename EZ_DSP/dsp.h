@@ -39,6 +39,21 @@ namespace EZ_DSP
         return fmin(fmax(in,min),max);
     }    
 
+    /*
+    One Pole LOWPASS filter
+    out is passed by reference
+    coeff can be calculated with:
+    coeff = 1.0 / (time * sample_rate) ; where time is in seconds
+    FOR EXAMPLE:
+    float output = 0, input = 1, delay = 40ms;
+    fonepole(output, input, 1/(delay *.001 * 44100) )
+    cout<<output;     yields "0.000566893"
+    */
+   inline void fonepole(float &out, float in, float coeff)
+   {
+    out += coeff * (in - out);
+   }
+
 
 }
 #endif
