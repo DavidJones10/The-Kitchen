@@ -27,7 +27,7 @@ namespace EZ_DSP
     {
         float min;
         #ifdef __arm__
-            asm("vminm.f32 %[d], %[n], %[m]" : [d] "=t"(min) : [n] "t"(a), [m] "t"(b) :);
+            asm("vminnm.f32 %[d], %[n], %[m]" : [d] "=t"(min) : [n] "t"(a), [m] "t"(b) :);
         #else 
             min = a < b ? a : b;
         #endif //__arm__

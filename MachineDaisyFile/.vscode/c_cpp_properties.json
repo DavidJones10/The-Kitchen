@@ -12,7 +12,8 @@
       "includePath": [
         "${workspaceFolder}/**",
         "${workspaceFolder}/../../DaisyExamples/libDaisy//**",
-        "${workspaceFolder}/../../DaisyExamples/DaisySP//**"
+        "${workspaceFolder}/../../DaisyExamples/DaisySP//**",
+        "${workspaceFolder}/../EZ_DSP//**"
       ],
       "name": "Win32",
       "windowsSdkVersion": "10.0.17763.0"
@@ -29,7 +30,8 @@
       "includePath": [
         "${workspaceFolder}/**",
         "${workspaceFolder}/../../DaisyExamples/libDaisy//**",
-        "${workspaceFolder}/../../DaisyExamples/DaisySP//**"
+        "${workspaceFolder}/../../DaisyExamples/DaisySP//**",
+        "${workspaceFolder}/../EZ_DSP//**"
       ],
       "name": "macOS"
     }

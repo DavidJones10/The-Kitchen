@@ -27,14 +27,16 @@ public:
         readPtr = 1;
     }
     
-    // sets delay for size_t input
+    // sets delay for size_t input, assumes unchanging value
     inline void setDelay(size_t delay)
     {
-        fracional = 0;
+        fractional = 0;
         readPtr = readPtr < maxSize ? readPtr : maxSize - 1;
     }
 
-    // sets delay for float input
+    /* sets delay for float input, creates fractional delay
+        for changing value
+    */
     inline void setDelay(float delay)
     {
         int32_t delayInt = static_cast<int32_t>(delay);
@@ -53,7 +55,7 @@ public:
     inline const sampleType read(float delSample)
     {
         int32_t delayInt = static_cast<int32_t>(delSample);
-        float delFraction = delaySample - static_cast<float>(delayInt);
+        float delFraction = delSample - static_cast<float>(delayInt);
         const sampleType sample1 = delLine[(writePtr + delayInt) % maxSize];
         const sampleType sample2 = delLine[(writePtr + delayInt + 1) % maxSize];
         return lerp(sample1, sample2, delFraction);
@@ -63,6 +65,7 @@ public:
     //   Best for when delay time is set in different function
     inline const sampleType read()
     {
+        int32_t delayInt = static_cast<int32_t>(readPtr);
         const sampleType sample1 = delLine[(writePtr + delayInt) % maxSize];
         const sampleType sample2 = delLine[(writePtr + delayInt + 1) % maxSize];
         return lerp(sample1, sample2, fractional);
