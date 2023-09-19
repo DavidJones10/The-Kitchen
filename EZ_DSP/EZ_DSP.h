@@ -6,6 +6,7 @@
 #include "delay_line.h"
 #include "chorus.h"
 #include "flanger.h"
+#include "phaser.h"
 
 
 #endif

@@ -39,6 +39,32 @@ namespace EZ_DSP
         return fmin(fmax(in,min),max);
     }    
 
+   inline int maxInt(int a, int b)
+    {
+        int max;
+        #ifdef __arm__
+            asm("smax %[d], %[n], %[m]" : [d] "=r"(max) : [n] "r"(a), [m] "r"(b));
+        #else
+            max = (a > b) ? a : b;
+        #endif // __arm__
+        return max;
+    }
+    inline int minInt(int a, int b)
+    {
+        int min;
+        #ifdef __arm__
+            asm("smin %[d], %[n], %[m]" : [d] "=r"(min) : [n] "r"(a), [m] "r"(b));
+        #else
+            min = (a < b) ? a : b;
+        #endif // __arm__
+        return min;
+    }
+    inline int clampInt(int in, int min, int max)
+    {
+        return minInt(maxInt(in,min), max);
+    }
+
+
     /*
     One Pole LOWPASS filter
     out is passed by reference

@@ -6,7 +6,7 @@
 
 namespace EZ_DSP
 {
-template <typename sampleType, size_t max_size>
+template <typename sampleType, size_t maxSize>
 class DelayLine 
 {
 public:
@@ -14,12 +14,12 @@ public:
     ~DelayLine(){}
     
     // Initializes delay line
-    void Init() {Reset();}
+    void init() {reset();}
     
     // Resets buffer, sets all values to 0
-    void Reset() 
+    void reset() 
     {
-        for (size_t i=0; i < max_size; i++)
+        for (size_t i=0; i < maxSize; i++)
         {
             delLine[i] = sampleType(0);
         }
@@ -31,7 +31,7 @@ public:
     inline void setDelay(size_t delay)
     {
         fracional = 0;
-        readPtr = readPtr < max_size ? readPtr : max_size - 1;
+        readPtr = readPtr < maxSize ? readPtr : maxSize - 1;
     }
 
     // sets delay for float input
@@ -39,13 +39,13 @@ public:
     {
         int32_t delayInt = static_cast<int32_t>(delay);
         fractional = delay - static_cast<float>(delayInt);
-        readPtr = static_cast<size_t>(delayInt) < max_size ? delayInt : max_size - 1;
+        readPtr = static_cast<size_t>(delayInt) < maxSize ? delayInt : maxSize - 1;
     }
     // Writes sample to delay line
     inline void write(const sampleType sample)
     {
         delLine[writePtr] = sample;
-        writePtr = (writePtr - 1 + max_size) % max_size;
+        writePtr = (writePtr - 1 + maxSize) % maxSize;
     }
 
     // Outputs interpolated sample from delay line.   
@@ -54,8 +54,8 @@ public:
     {
         int32_t delayInt = static_cast<int32_t>(delSample);
         float delFraction = delaySample - static_cast<float>(delayInt);
-        const sampleType sample1 = delLine[(writePtr + delayInt) % max_size];
-        const sampleType sample2 = delLine[(writePtr + delayInt + 1) % max_size];
+        const sampleType sample1 = delLine[(writePtr + delayInt) % maxSize];
+        const sampleType sample2 = delLine[(writePtr + delayInt + 1) % maxSize];
         return lerp(sample1, sample2, delFraction);
     }
 
@@ -63,10 +63,23 @@ public:
     //   Best for when delay time is set in different function
     inline const sampleType read()
     {
-        const sampleType sample1 = delLine[(writePtr + delayInt) % max_size];
-        const sampleType sample2 = delLine[(writePtr + delayInt + 1) % max_size];
+        const sampleType sample1 = delLine[(writePtr + delayInt) % maxSize];
+        const sampleType sample2 = delLine[(writePtr + delayInt + 1) % maxSize];
         return lerp(sample1, sample2, fractional);
-        
+    }
+
+    /** Processes input and returns allpass filtered output
+    --coefficient value meanings/usage:
+    --- 0-1: phase shift without much effect on amplitude
+    --- 1: simple delay line with 'delay' number of samples
+    --- negative: introduces feedback, useful for reverb or comb filters
+    */
+    inline const sampleType allpass(const sampleType sample, size_t delay, const sampleType coefficient)
+    {
+        sampleType read = delLine[writePtr+delay] % maxSize;
+        sampleType write = sample + coefficient * read;
+        write(write);
+        return -write * coefficient + read;
     }
     
 private:
@@ -76,7 +89,7 @@ private:
     float fractional;
     size_t writePtr;
     size_t readPtr;
-    sampleType delLine[max_size];
+    sampleType delLine[maxSize];
     
 };
 }

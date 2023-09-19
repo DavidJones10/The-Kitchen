@@ -36,9 +36,9 @@ class PhaserEngine
         void setLfoFrequency(float frequency);
         
         /** Set the allpass frequency
-        \param ap_freq Frequency in Hz.
+        \param ap_freq Expects 0-20000Hz
         */
-        void setFreq(float allpassFreq);
+        void setFreq(float apFreq);
   
         /** Sets dry wet for chorus engine
             \param wet expects 0-1
@@ -50,8 +50,9 @@ class PhaserEngine
         float LfoAmp; // LFO Depth
         float LfoPhase; // LFO Phase
         float sampleRate;
+        float delTime; 
         float dryWet;
-        float freqOffset; // 
+        float freqOffset;  
         float allpassFreq; 
         static constexpr int32_t maxDelaySize = 2400; // 50ms max
         DelayLine<float, maxDelaySize> delLine;
@@ -87,7 +88,7 @@ class Phaser
         void setLfoFrequency(float frequency);
         
         /** Set the allpass frequency
-        \param ap_freq Frequency in Hz.
+        \param ap_freq Expects 0-20000Hz
         */
         void setFreq(float allpassFreq);
   
@@ -96,8 +97,16 @@ class Phaser
         */
         void setDryWet(float wet);
 
+        /** Sets the number of phaser poles / delay lines
+         * 
+         * @param poles expects 1-8
+         */
+        void setNumPoles(int poles);
+
     private:
-        PhaserEngine engines[8];
+        static constexpr int maxPoles = 8;
+        PhaserEngine engines[maxPoles];
+        int numPoles;
 
 
 };

@@ -6,7 +6,7 @@ using namespace EZ_DSP;
 void ChorusEngine::init(float sample_rate)
 {
     sampleRate = sample_rate;
-    delLine.Init();
+    delLine.init();
     LfoAmp  = 0.f;
     feedback = .2f;
     setDelay(.75);
@@ -66,13 +66,13 @@ void ChorusEngine::setDelayMs(float ms)
 
 void ChorusEngine::setDryWet(float wet)
 {
-    dryWet = fclamp(wet,0,.99f);
+    dryWet = fclamp(wet,0.f,1.f);
 }
 
 float ChorusEngine::processLfo()
 {
     LfoPhase += LfoFreq;
-    if (LfoPhase >= 1.f) LfoPhase -= 1.f;
+    if (LfoPhase >= 1.0f) LfoPhase -= 2.0f; 
     return LfoAmp * sinf(TWOPI_F * LfoPhase);
 }
 

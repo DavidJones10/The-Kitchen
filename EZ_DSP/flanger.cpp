@@ -9,7 +9,7 @@ void Flanger::init(float sample_rate)
     modType = 0;
     setModMode(0);
     setFeedback(.2f);
-    delLine.Init();
+    delLine.init();
     LfoAmp = 0.f;
     setDelay(.75f);
     LfoPhase = 0.f;
@@ -83,7 +83,7 @@ void Flanger::setModMode(int mode)
 float Flanger::processLfoSin()
 {
     LfoPhase += LfoFreq;
-    if (LfoPhase >= 1.f) LfoPhase -= 1.f;
+    if (LfoPhase >= 1.f) LfoPhase -= 2.f;
     return LfoAmp * sinf(TWOPI_F * LfoPhase);
 }
 
