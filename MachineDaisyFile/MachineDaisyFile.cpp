@@ -18,7 +18,7 @@ float myfmap(float in, float min, float max)
 {
 	return EZ_DSP::fclamp(min + in * (max - min), min, max);
 }
-
+// TODO: this is NOT working, find out why
 void buttonsToAudio(float &outL, float &outR)
 {
 	float buttonValue = buttons.Process();
@@ -27,7 +27,7 @@ void buttonsToAudio(float &outL, float &outR)
 	{
 		outL += kick.Process(true);
 		outR += kick.Process(true);
-		
+
 	}
 	else if (buttonValue > 200 && buttonValue < 500)
 	{
