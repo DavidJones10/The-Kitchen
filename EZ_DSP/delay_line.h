@@ -34,8 +34,9 @@ public:
         readPtr = readPtr < maxSize ? readPtr : maxSize - 1;
     }
 
-    /* sets delay for float input, creates fractional delay
+    /** sets delay for float input, creates fractional delay
         for changing value
+        @param delay delay in samples
     */
     inline void setDelay(float delay)
     {
