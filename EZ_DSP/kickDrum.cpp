@@ -66,7 +66,7 @@ float kickDrum::calculateEnvelope(float time, float decay, float sustain)
     }
 }
 
-float kickDrum::generateAudio(float in, int index) 
+float kickDrum::generateAudio(int index) 
 {
         // Calculate the volume envelope value at this time
         float volumeEnvelope = calculateEnvelope(index / sampleRate, volumeDecay, volumeSustain);

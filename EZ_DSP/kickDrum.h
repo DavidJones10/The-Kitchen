@@ -12,7 +12,7 @@ public:
     void setModulationAmount(float amount);
     void setNumOscillatorCycles(int cycles);
 
-    float generateAudio(float in, int index);
+    float generateAudio(int index);
 
 private:
     int waveType;
