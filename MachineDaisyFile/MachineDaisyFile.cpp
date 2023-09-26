@@ -33,6 +33,7 @@ void buttonsToAudio(float &outL, float &outR)
 	buttonValue = myfmap(buttonValue, 0, 3300); // maps 0-1 value to milliamp values
 	float kickOut, snareOut, hatOut, synthOut, totalOut;
 	
+	/*
 	if (buttonValue < 1850)
 		kickEnv.Trigger();
 	else if (buttonValue > 1850 && buttonValue < 2000)
@@ -41,35 +42,48 @@ void buttonsToAudio(float &outL, float &outR)
 		hatEnv.Trigger();
 	else if (buttonValue > 2900 && buttonValue < 3100)
 		synthEnv.Trigger();
+	*/
+
 	
 	kick.SetTone(.7f );
     kick.SetDecay(.4f);
     kick.SetSelfFmAmount(.2f);
-	kickOut =  kick.Process(true);
-	kickOut *= kickEnv.Process();
+	//kickOut =  kick.Process(true);
+	//kickOut *= kickEnv.Process();
 
 	snare.SetAccent(.5f);
 	snare.SetDecay(.5f);
 	snare.SetTone(1.f);
 	snare.SetSnappy(.6);
-	snareOut =  snare.Process(true);
-	snareOut *= snareEnv.Process();
+	//snareOut =  snare.Process(true);
+	//snareOut *= snareEnv.Process();
 
 	hat.SetAccent(.5f);
 	hat.SetDecay(.1f);
 	hat.SetTone(.1f);
-	hatOut =  hat.Process(true);
-	hatOut *= hatEnv.Process();
+	//hatOut =  hat.Process(true);
+	//hatOut *= hatEnv.Process();
 
 	synthKick.SetAccent(.5f);
     synthKick.SetDirtiness(.1f);
     synthKick.SetDecay(.7f);
 	synthKick.SetFreq(150.f);
-	synthOut =  synthKick.Process(true);
-	synthOut *= synthEnv.Process();
+	//synthOut =  synthKick.Process(true);
+	//synthOut *= synthEnv.Process();
 
+	if (buttonValue < 1850)
+		totalOut = kick.Process();
+	else if (buttonValue > 1850 && buttonValue < 2000)
+		totalOut = snare.Process();
+	else if (buttonValue > 2000 && buttonValue < 2900)
+		totalOut = hat.Process();
+	else if (buttonValue > 2900 && buttonValue < 3100)
+		totalOut = synthKick.Process();
+	outL = outR = totalOut;
+	/*
 	totalOut = (kickOut + hatOut + snareOut + synthOut) *.25f;
-
+	outL = outR = totalOut;
+	/*
 	float delOut, fback;
 	
 	delOut = del.read();
@@ -77,6 +91,7 @@ void buttonsToAudio(float &outL, float &outR)
 	del.write(fback);
 	outL += totalOut*(1-delWet) + delOut*delWet;
 	outR += totalOut*(1-delWet) + delOut*delWet;
+	*/
 }
 
 void initDrums()
@@ -143,7 +158,7 @@ int main(void)
 	initControls();
 	hw.SetLed(true);
 	del.setDelay(delTime);
-\
+
 	hw.StartAudio(AudioCallback);
 	while(1) 
 	{
