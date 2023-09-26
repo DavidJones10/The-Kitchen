@@ -32,6 +32,7 @@ void buttonsToAudio(float &outL, float &outR)
 	buttonValue = hw.adc.GetFloat(0);
 	buttonValue = myfmap(buttonValue, 0, 3300); // maps 0-1 value to milliamp values
 	float kickOut, snareOut, hatOut, synthOut, totalOut;
+	bool kickOn=false, snareOn=false, hatOn=false, synthOn=false;
 	
 	/*
 	if (buttonValue < 1850)
@@ -45,41 +46,61 @@ void buttonsToAudio(float &outL, float &outR)
 	*/
 
 	
-	kick.SetTone(.7f );
-    kick.SetDecay(.4f);
-    kick.SetSelfFmAmount(.2f);
+	
 	//kickOut =  kick.Process(true);
 	//kickOut *= kickEnv.Process();
 
-	snare.SetAccent(.5f);
-	snare.SetDecay(.5f);
-	snare.SetTone(1.f);
-	snare.SetSnappy(.6);
+	
 	//snareOut =  snare.Process(true);
 	//snareOut *= snareEnv.Process();
 
-	hat.SetAccent(.5f);
-	hat.SetDecay(.1f);
-	hat.SetTone(.1f);
+	
 	//hatOut =  hat.Process(true);
 	//hatOut *= hatEnv.Process();
 
-	synthKick.SetAccent(.5f);
-    synthKick.SetDirtiness(.1f);
-    synthKick.SetDecay(.7f);
-	synthKick.SetFreq(150.f);
+	
 	//synthOut =  synthKick.Process(true);
 	//synthOut *= synthEnv.Process();
 
 	if (buttonValue < 1850)
-		totalOut = kick.Process();
+	{
+		kick.SetTone(.7f );
+    	kick.SetDecay(.04f);
+    	kick.SetSelfFmAmount(.12f);
+		kickOn = true;
+		snareOn = hatOn = synthOn = false;
+	}
 	else if (buttonValue > 1850 && buttonValue < 2000)
-		totalOut = snare.Process();
+	{
+		snare.SetAccent(.5f);
+		snare.SetDecay(.5f);
+		snare.SetTone(1.f);
+		snare.SetSnappy(.6f);
+		snareOn = true;
+		kickOn = hatOn = synthOn = false;
+	}
 	else if (buttonValue > 2000 && buttonValue < 2900)
-		totalOut = hat.Process();
+	{	
+		hat.SetAccent(.5f);
+		hat.SetDecay(.1f);
+		hat.SetTone(.1f);
+		hatOn = true;
+		kickOn = snareOn = synthOn = false;
+	}
 	else if (buttonValue > 2900 && buttonValue < 3100)
-		totalOut = synthKick.Process();
+	{
+		synthKick.SetAccent(.5f);
+    	synthKick.SetDirtiness(.1f);
+    	synthKick.SetDecay(.7f);
+		synthKick.SetFreq(150.f);
+		synthOn = true;
+		kickOn = snareOn = hatOn = false;
+	}
+	else
+		{kickOn = snareOn = hatOn = synthOn = false;}
+	totalOut = kick.Process(kickOn) + snare.Process(snareOn) + hat.Process(hatOn) + synthKick.Process(synthOn);
 	outL = outR = totalOut;
+	
 	/*
 	totalOut = (kickOut + hatOut + snareOut + synthOut) *.25f;
 	outL = outR = totalOut;
@@ -137,7 +158,7 @@ void initControls()
 	hw.adc.Init(&cfg,1);
 	hw.adc.Start();
 	initDrums();
-	initEnvs();
+	//initEnvs();
 }
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, size_t size)
@@ -152,9 +173,9 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, s
 int main(void)
 {
 	hw.Init();
+	hw.StartLog(true);
 	hw.SetAudioBlockSize(4); // number of samples handled per callback
 	hw.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_48KHZ);
-	hw.StartLog(true);
 	initControls();
 	hw.SetLed(true);
 	del.setDelay(delTime);
