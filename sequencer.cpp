@@ -1,24 +1,40 @@
-int dur = 3;
-int fs = 44100;
-int totalSamples = dur * fs;
-int numSteps = 8;
-int stepLength = totalSamples / numSteps;
+//#include <stdio.h>
+//#include <time.h>
 
-bool kick[8];
-bool snare[8];
-bool hat[8];
-bool crash[8];
-
-bool trigSound( int totalSamples, int numSteps, int stepLength, bool kick, bool snare, bool hat, bool crash)
+//#include "../DaisyExamples/libDaisy/src/per/tim.h"
+//#include "../DaisyExamples/libDaisy/src/util/hal_map.h"
+//#include "../DaisyExamples/libDaisy/src/sys/system.h"
+class sequencer
 {
-    float sequence[totalSamples];
-    for(int i = 0; i < numSteps; i++)
+    int numSteps = 8;
+    int step;
+
+    bool kick [8];
+    bool snare[8];
+    bool hat[8];
+    bool crash[8];
+    bool trig[4];
+
+    bool trigSound()
     {
-        sequence[]
+        //if (CLOCKS_PER_SEC % clock() == 0)
+        if (1000 % (GetTick() / (GetFreq() / 1000000)) == 0)
+        {
+            //step = numSteps % (clock() / CLOCKS_PER_SEC);
+            step = (GetTick() / (GetFreq() / 1000000)) / 1000;
+
+            trig[0] = kick[step];
+            trig[1] = snare[step];
+            trig[2] = hat[step];
+            trig[3] = crash[step];
+        }
     }
-}
 
-int updateSeq()
-{
-
-}
+    bool trigReset()
+    {
+        for(int i = 0; i < sizeof(trig); i++)
+        {
+            trig[i] = 0;
+        }
+    }
+};
