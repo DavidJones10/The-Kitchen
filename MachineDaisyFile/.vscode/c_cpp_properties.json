@@ -13,7 +13,9 @@
         "${workspaceFolder}/**",
         "${workspaceFolder}/../../DaisyExamples/libDaisy//**",
         "${workspaceFolder}/../../DaisyExamples/DaisySP//**",
-        "${workspaceFolder}/../EZ_DSP//**"
+        "${workspaceFolder}/../EZ_DSP//**",
+        "${workspaceFolder}/../LED_Matrix_Lib//**"
+
       ],
       "name": "Win32",
       "windowsSdkVersion": "10.0.17763.0"
@@ -31,7 +33,8 @@
         "${workspaceFolder}/**",
         "${workspaceFolder}/../../DaisyExamples/libDaisy//**",
         "${workspaceFolder}/../../DaisyExamples/DaisySP//**",
-        "${workspaceFolder}/../EZ_DSP//**"
+        "${workspaceFolder}/../EZ_DSP//**",
+        "${workspaceFolder}/../LED_Matrix_Lib//**"
       ],
       "name": "macOS"
     }

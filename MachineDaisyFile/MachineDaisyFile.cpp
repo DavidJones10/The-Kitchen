@@ -2,17 +2,19 @@
 #include "daisysp.h"
 #include "../EZ_DSP/EZ_DSP.h"
 
+
 #define MAX_DELAY 96000
-#define NUM_STEPS_IDX 3
+#define NUM_STEPS 4
 
 using namespace daisy;
 using namespace daisysp;
 
 constexpr Pin BUTTONS = seed::D15;
-constexpr Pin SELECTOR = seed::D6;
+constexpr Pin SELECTOR = seed::D16;
 
 static DaisySeed hw;
 static AdcHandle adc;
+
 
 enum drumModes
 {
@@ -66,12 +68,7 @@ bool isButtonPressed(int buttonIdx)
 //====================================================================================
 void processButtons()
 {
-	selector.Debounce();
 	
-	if (selector.RisingEdge())
-	{
-		drumMode += 1 % NUM_STEPS_IDX;
-	}
 	for (int i = 0; i < 4; i++)
     {
         if (isButtonPressed(i))
@@ -121,27 +118,29 @@ void setDrumParams()
 	synthKick.SetFreq(150.f);
 }
 //====================================================================================
+void digitalButtons()
+{
+	selector.Debounce();
+	if (selector.RisingEdge())
+	{
+		drumMode++;
+		drumMode = drumMode % 4;
+	}
+}
+//====================================================================================
 void sequencer(float &outL, float &outR)
 {	
-	/*
-	if (buttonValue < 1850)
-		kickEnv.Trigger();
-	else if (buttonValue > 1850 && buttonValue < 2000)
-		snareEnv.Trigger();
-	else if (buttonValue > 2000 && buttonValue < 2900)
-		hatEnv.Trigger();
-	else if (buttonValue > 2900 && buttonValue < 3100)
-		synthEnv.Trigger();
-	*/
+	
+	digitalButtons();
 	bool t = tick.Process();
+	outL = kick.Process(kicks[step]&&t) + snare.Process(snares[step]&&t) + hat.Process(snares[step]&&t) + synthKick.Process(synths[step]&&t);
+	outR = kick.Process(kicks[step]&&t) + snare.Process(snares[step]&&t) + hat.Process(snares[step]&&t) + synthKick.Process(synths[step]&&t);
 	if (t)
 	{
-		step += 1 % NUM_STEPS_IDX;
-		setDrumParams();
+		step++;
+		step = step % NUM_STEPS;
 	}
-	//outL = kick.Process(kicks[step]) + snare.Process(snares[step]) + hat.Process(snares[step]) + synthKick.Process(synths[step]);
-	//outR = kick.Process(kicks[step]) + snare.Process(snares[step]) + hat.Process(snares[step]) + synthKick.Process(synths[step]);
-
+	
 	/*	
 	float delOut, fback;
 	
@@ -160,7 +159,7 @@ void initDrums()
 	snare.Init(fs);
 	hat.Init(fs);
 	synthKick.Init(fs);
-	tick.Init(2.f, hw.AudioSampleRate());
+	tick.Init(4.f, hw.AudioSampleRate());
 }
 //====================================================================================
 void initEnvs()
@@ -200,6 +199,18 @@ void initControls()
 	initDrums();
 	//initEnvs();
 }
+/*
+void ledMatrix()
+{
+	for (int i=0; i < 4; i++)
+	{
+		setled(0, i, (int)kicks[i]);
+		setled(1, i, (int)snares[i]);
+		setled(2, i, (int)hats[i]);
+		setled(3, i, (int)synths[i]);
+	}
+}
+*/
 //====================================================================================
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, size_t size)
 {
@@ -215,7 +226,7 @@ int main(void)
 	hw.Init();
 	hw.SetAudioBlockSize(4); // number of samples handled per callback
 	hw.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_48KHZ);
-	hw.StartLog(true);
+	//hw.StartLog(true);
 	initControls();
 	hw.SetLed(true);
 	del.setDelay(delTime);
@@ -224,10 +235,17 @@ int main(void)
 	while(1) 
 	{
 		processButtons();
-		System::Delay(200);
+		setDrumParams();
+		//ledMatrix();
+		/*
+		System::Delay(100);
 		hw.PrintLine(" Button Value: " FLT_FMT3, FLT_VAR3(buttonValue));
 		hw.PrintLine("Kick bool Array %d %d %d %d", kicks[0], kicks[1], kicks[2], kicks[3]);
 		hw.PrintLine("Snare bool Array %d %d %d %d", snares[0], snares[1], snares[2], snares[3]);
+		hw.PrintLine("Hat bool Array %d %d %d %d", hats[0], hats[1], hats[2], hats[3]);
+		hw.PrintLine("Synth bool Array %d %d %d %d", synths[0], synths[1], synths[2], synths[3]);
 		hw.PrintLine("Drum Mode: %d", drumMode);
+		hw.PrintLine("Current Step %d", step);
+		*/
 	}
 }
