@@ -2,7 +2,7 @@
 
 using namespace EZ_DSP;
 
-Oscillator::init(float sample_rate)
+void Oscillator::init(float sample_rate)
 {
     sampleRate =  sample_rate;
     frequency      = 100.0f;

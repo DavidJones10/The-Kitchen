@@ -1,18 +1,19 @@
 #pragma once
-
+#ifndef EZ_DSP_KICKDRUM_H
+#define EZ_DSP_KICKDRUM_H
+namespace EZ_DSP
+{
 class kickDrum 
 {
 public:
-    kickDrum(float sampleRate, int waveType);
-    ~kickDrum();
-
+    void init(float sample_rate, int waveType);
     void setVolumeEnvelope(float decay, float sustain);
     void setPitchEnvelope(float decay, float pitchStart, float pitchEnd);
     void selectWaveform(int waveform);
     void setModulationAmount(float amount);
     void setNumOscillatorCycles(int cycles);
 
-    float generateAudio(int index);
+    float generateAudio(bool trigger);
 
 private:
     int waveType;
@@ -28,6 +29,10 @@ private:
     float lfoPhase;
     float modulationAmount;
     int numOscillatorCycles;
+    int count=0;
+    bool counting = false;
 
     float calculateEnvelope(float time, float decay, float sustain);
 };
+}
+#endif

@@ -2,7 +2,6 @@
 #include "daisysp.h"
 #include "../EZ_DSP/EZ_DSP.h"
 
-
 #define MAX_DELAY 96000
 #define NUM_STEPS 4
 
@@ -25,14 +24,16 @@ int drumMode = 0;
 Switch selector;
 float buttonValue;
 
-
+//====================================================================================
 Metro tick;
 AnalogBassDrum kick;
-AnalogSnareDrum snare;
 HiHat<SquareNoise, LinearVCA, true> hat;
 SyntheticBassDrum synthKick;
+SyntheticSnareDrum snare;
 AdEnv kickEnv, snareEnv, hatEnv, synthEnv;
-EZ_DSP::DelayLine<float, MAX_DELAY> DSY_SDRAM_BSS del;
+//EZ_DSP::DelayLine<float, MAX_DELAY> DSY_SDRAM_BSS del;
+
+//EZ_DSP::kickDrum ourKick;
 
 bool snares[4] = {false, false, false, false};
 bool kicks[4] = {false, false, false, false};
@@ -40,17 +41,19 @@ bool hats[4] = {false, false, false, false};
 bool synths[4] = {false, false, false, false};
 
 int step=0;
+uint32_t debounceDelay = 100000; // 100000us 100ms
+uint32_t lastDebounceTime = 0;
 
 float delFeedback = .5f, delTime = .25f*48000, delWet = .5f;
-bool kickOn=false, snareOn=false, hatOn=false, synthOn=false;
-
 //====================================================================================
+// maps input of 0-1 to number between min and max
 float myfmap(float in, float min, float max)
 {
 	return EZ_DSP::fclamp(min + in * (max - min), min, max);
 }
 
 //====================================================================================
+// gets button press for a specific button in the ladder
 bool isButtonPressed(int buttonIdx)
 {
 	buttonValue = hw.adc.GetFloat(0);
@@ -66,47 +69,46 @@ bool isButtonPressed(int buttonIdx)
 	else return false;
 }
 //====================================================================================
+// gets button ladder presses and assigns them to boolean arrays 
 void processButtons()
 {
-	
-	for (int i = 0; i < 4; i++)
-    {
-        if (isButtonPressed(i))
-        {
-            switch (drumMode)
-            {
-                case KICK:
-                    // Activate the kick drum note in the sequence
-                    kicks[i] = !kicks[i];
-                    break;
-                case SNARE:
-                    // Activate the snare drum note in the sequence
-                    snares[i] = !snares[i];
-                    break;
-                case HAT:
-                    // Activate the hi-hat note in the sequence
-                    hats[i] = !hats[i];
-                    break;
-                case SYNTH_KICK:
-                    // Activate the synthetic kick drum note in the sequence
-                    synths[i] = !synths[i];
-                    break;
-                // Add more cases for other drum modes if needed
-            }
-        }
-    }
+	if (System::GetUs() - lastDebounceTime > debounceDelay)
+	{
+		for (int i = 0; i < 4; i++)
+	    {
+			if (isButtonPressed(i))
+	    	{
+	    	    switch (drumMode)
+	    	    {
+	    	        case KICK:
+	    	            // Activate the kick drum note in the sequence
+	    	            kicks[i] = !kicks[i];
+	    	            break;
+	    	        case SNARE:
+	    	            // Activate the snare drum note in the sequence
+	    	            snares[i] = !snares[i];
+	    	            break;
+	    	        case HAT:
+	    	            // Activate the hi-hat note in the sequence
+	    	            hats[i] = !hats[i];
+	    	            break;
+	    	        case SYNTH_KICK:
+	    	            // Activate the synthetic kick drum note in the sequence
+	    	            synths[i] = !synths[i];
+	    	            break;
+	    	        // Add more cases for other drum modes if needed
+	    	    }
+	    	}
+	    }
+		lastDebounceTime = System::GetUs();	
+	}
 }
 //====================================================================================
+// sets drum parameters
 void setDrumParams()
 {
-	kick.SetTone(.7f );
-    kick.SetDecay(.4f);
-    kick.SetSelfFmAmount(.2f);
+	kick.SetFreq(100.f);
 
-	snare.SetAccent(.5f);
-	snare.SetDecay(.5f);
-	snare.SetTone(1.f);
-	snare.SetSnappy(.6);
 
 	hat.SetAccent(.5f);
 	hat.SetDecay(.1f);
@@ -118,6 +120,7 @@ void setDrumParams()
 	synthKick.SetFreq(150.f);
 }
 //====================================================================================
+// processes selector button
 void digitalButtons()
 {
 	selector.Debounce();
@@ -128,76 +131,27 @@ void digitalButtons()
 	}
 }
 //====================================================================================
-void sequencer(float &outL, float &outR)
-{	
-	
-	digitalButtons();
-	bool t = tick.Process();
-	outL = kick.Process(kicks[step]&&t) + snare.Process(snares[step]&&t) + hat.Process(snares[step]&&t) + synthKick.Process(synths[step]&&t);
-	outR = kick.Process(kicks[step]&&t) + snare.Process(snares[step]&&t) + hat.Process(snares[step]&&t) + synthKick.Process(synths[step]&&t);
-	if (t)
-	{
-		step++;
-		step = step % NUM_STEPS;
-	}
-	
-	/*	
-	float delOut, fback;
-	
-	delOut = del.read();
-	fback = (delOut * delFeedback) + totalOut;
-	del.write(fback);
-	outL += totalOut*(1-delWet) + delOut*delWet;
-	outR += totalOut*(1-delWet) + delOut*delWet;
-	*/
-}
-//====================================================================================
+// initializes drums
 void initDrums()
 {
 	float fs = hw.AudioSampleRate();
+	tick.Init(4.f, fs);
+	//ourKick.init(fs, 0);
 	kick.Init(fs);
 	snare.Init(fs);
 	hat.Init(fs);
 	synthKick.Init(fs);
-	tick.Init(4.f, hw.AudioSampleRate());
 }
 //====================================================================================
-void initEnvs()
-{
-	snareEnv.Init(hw.AudioSampleRate());
-    snareEnv.SetTime(ADENV_SEG_ATTACK, .01);
-    snareEnv.SetTime(ADENV_SEG_DECAY, .2);
-    snareEnv.SetMax(1);
-    snareEnv.SetMin(0);
-
-	kickEnv.Init(hw.AudioSampleRate());
-    kickEnv.SetTime(ADENV_SEG_ATTACK, .01);
-    kickEnv.SetTime(ADENV_SEG_DECAY, .2);
-    kickEnv.SetMax(1);
-    kickEnv.SetMin(0);
-
-	hatEnv.Init(hw.AudioSampleRate());
-    hatEnv.SetTime(ADENV_SEG_ATTACK, .01);
-    hatEnv.SetTime(ADENV_SEG_DECAY, .2);
-    hatEnv.SetMax(1);
-    hatEnv.SetMin(0);
-
-	synthEnv.Init(hw.AudioSampleRate());
-    synthEnv.SetTime(ADENV_SEG_ATTACK, .01);
-    synthEnv.SetTime(ADENV_SEG_DECAY, .2);
-    synthEnv.SetMax(1);
-    synthEnv.SetMin(0);
-}
-//====================================================================================
+// initializes all buttons and drum classes
 void initControls()
 {
+	selector.Init(SELECTOR,hw.AudioCallbackRate());
+	initDrums();
 	AdcChannelConfig cfg;
 	cfg.InitSingle(BUTTONS);
 	hw.adc.Init(&cfg,1);
 	hw.adc.Start();
-	selector.Init(SELECTOR,1000);
-	initDrums();
-	//initEnvs();
 }
 /*
 void ledMatrix()
@@ -212,12 +166,57 @@ void ledMatrix()
 }
 */
 //====================================================================================
+// processes drum audio with sequencer controls
+float processSequencer()
+{	
+	float totalOut = 0.f;
+	float kickOut = 0.0f;
+    float snareOut = 0.0f;
+    float hatOut = 0.0f;
+    float synthOut = 0.0f;
+
+	bool t = tick.Process();
+    // Process each drum sound individually and accumulate their outputs
+    kickOut = kick.Process(kicks[step] && t);
+    snareOut = snare.Process(snares[step] && t);
+    hatOut = hat.Process(hats[step] && t);
+    synthOut = synthKick.Process(synths[step] && t);
+
+    // Sum the outputs of the drum sounds with their respective gain controls
+    float kickVolume = 1.99f; // Adjust the volume as needed
+    float snareVolume = 0.5f;
+    float hatVolume = 0.5f;
+    float synthVolume = 0.5f;
+
+    totalOut = kickOut * kickVolume + snareOut * snareVolume + hatOut * hatVolume + synthOut * synthVolume;
+	if (t)
+	{
+		step++;
+		step = step % NUM_STEPS;
+		setDrumParams();
+	}
+	return totalOut;
+	
+	/*
+	float delOut, fback;
+	
+	delOut = del.read();
+	fback = (delOut * delFeedback) + totalOut;
+	del.write(fback);
+	outL += totalOut*(1-delWet) + delOut*delWet;
+	outR += totalOut*(1-delWet) + delOut*delWet;
+	*/
+	
+}
+
+//====================================================================================
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, size_t size)
 {
-	
+	processButtons();// processes button voltage ladder
+	digitalButtons();// processes drum selector button
 	for (size_t i = 0; i < size; i++)
-	{
-		sequencer(out[0][i], out[1][i]);
+	{		
+		out[0][i] = out[1][i] = processSequencer();
 	}
 }
 //====================================================================================
@@ -225,17 +224,21 @@ int main(void)
 {
 	hw.Init();
 	hw.SetAudioBlockSize(4); // number of samples handled per callback
-	hw.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_48KHZ);
+	hw.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_32KHZ); // set to 32khz because 48khz is too fast for all of the drum classes at once
 	//hw.StartLog(true);
+	hw.SetLed(false);
+	//del.setDelay(delTime);
 	initControls();
-	hw.SetLed(true);
-	del.setDelay(delTime);
-
 	hw.StartAudio(AudioCallback);
-	while(1) 
+	for (;;)
 	{
-		processButtons();
-		setDrumParams();
+		// simple test to see if drum selector button works, if button pressed, on board led lights up
+		if (selector.Pressed())
+			hw.SetLed(true);
+		else
+			hw.SetLed(false);
+		//System::Delay(100);
+		//processButtons();
 		//ledMatrix();
 		/*
 		System::Delay(100);
@@ -246,6 +249,6 @@ int main(void)
 		hw.PrintLine("Synth bool Array %d %d %d %d", synths[0], synths[1], synths[2], synths[3]);
 		hw.PrintLine("Drum Mode: %d", drumMode);
 		hw.PrintLine("Current Step %d", step);
-		*/
+		/**/
 	}
 }

@@ -247,7 +247,9 @@ build/MachineDaisyFile.o: MachineDaisyFile.cpp \
  ../../DaisyExamples/DaisySP//Source/Utility/samplehold.h \
  ../../DaisyExamples/DaisySP//Source/Utility/smooth_random.h \
  ../EZ_DSP/EZ_DSP.h ../EZ_DSP/dsp.h ../EZ_DSP/delay_line.h \
- ../EZ_DSP/chorus.h ../EZ_DSP/flanger.h ../EZ_DSP/phaser.h
+ ../EZ_DSP/chorus.h ../EZ_DSP/flanger.h ../EZ_DSP/phaser.h \
+ ../EZ_DSP/oscillator.h ../EZ_DSP/tremolo.h ../EZ_DSP/kickDrum.h \
+ ../EZ_DSP/JOEoscillator.h
 ../../DaisyExamples/libDaisy//Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h7xx.h:
 ../../DaisyExamples/libDaisy//Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h750xx.h:
 ../../DaisyExamples/libDaisy//Drivers/CMSIS/Include/core_cm7.h:
@@ -501,3 +503,7 @@ build/MachineDaisyFile.o: MachineDaisyFile.cpp \
 ../EZ_DSP/chorus.h:
 ../EZ_DSP/flanger.h:
 ../EZ_DSP/phaser.h:
+../EZ_DSP/oscillator.h:
+../EZ_DSP/tremolo.h:
+../EZ_DSP/kickDrum.h:
+../EZ_DSP/JOEoscillator.h:

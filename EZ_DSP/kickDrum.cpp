@@ -1,25 +1,21 @@
 #include "kickDrum.h"
-#include "JOEoscillator.cpp"
+#include "JOEoscillator.h"
 
-kickDrum::kickDrum(float sampleRate,int waveType) 
+using namespace EZ_DSP;
+
+void kickDrum::init(float sample_rate, int waveType)
 {
-    this->sampleRate = sampleRate;
+    sampleRate = sampleRate;
     waveformSize = 48000; 
     waveform = new float[waveformSize];
 
-    volumeDecay = 0.0;
-    volumeSustain = 0.0;
-    pitchDecay = 0.0;
-    pitchStart = 0.0;
-    pitchEnd = 0.0;
-    lfoFrequency = 1.0; 
-    lfoPhase = 0.0;
-}
-
-
-kickDrum::~kickDrum() 
-{
-    delete[] waveform;
+    volumeDecay = 200.0f;
+    pitchDecay = 10.0f;
+    pitchStart = 100.0f;
+    pitchEnd = 40.0f;
+    lfoFrequency = 1.0f; 
+    lfoPhase = 0.0f;
+    counting = false;
 }
 
 void kickDrum::setVolumeEnvelope(float decay, float sustain) 
@@ -53,11 +49,13 @@ void kickDrum::selectWaveform(int waveType)
 
 float kickDrum::calculateEnvelope(float time, float decay, float sustain) 
 {
-    if (time < 0.0) 
+    float timeMs = time * 1000;
+    if (timeMs < 0.0) 
     {
         return 0.0;  // Envelope not started yet
     } 
-    else if (time < decay) {
+    else if (timeMs < decay) 
+    {
         return 1.0 - (1.0 - sustain) * (1.0 - exp(-time / decay));
     } 
     else 
@@ -66,19 +64,20 @@ float kickDrum::calculateEnvelope(float time, float decay, float sustain)
     }
 }
 
-float kickDrum::generateAudio(int index) 
+float kickDrum::generateAudio(bool trigger) 
 {
+        
         // Calculate the volume envelope value at this time
-        float volumeEnvelope = calculateEnvelope(index / sampleRate, volumeDecay, volumeSustain);
+        float volumeEnvelope = calculateEnvelope(count / sampleRate, volumeDecay, volumeSustain);
 
         // Calculate the pitch envelope value at this time
-        float pitchEnvelope = calculateEnvelope(index / sampleRate, pitchDecay, 1.0);  // Sustain level of 1.0
+        float pitchEnvelope = calculateEnvelope(count / sampleRate, pitchDecay, 1.0);  // Sustain level of 1.0
 
         // Calculate the current pitch based on the pitch envelope
         float currentPitch = pitchStart + (pitchEnd - pitchStart) * pitchEnvelope;
 
         // Calculate the LFO value (e.g., using a sine wave)
-        float lfoValue = sin(2.0 * M_PI * lfoFrequency * index / sampleRate);
+        float lfoValue = sin(2.0 * M_PI * lfoFrequency * count / sampleRate);
 
         // Adjust modulationAmount to control the depth of modulation
         float modulatedPitch = currentPitch + modulationAmount * lfoValue;
@@ -91,22 +90,29 @@ float kickDrum::generateAudio(int index)
 
         // Calculate the current sample value by modulating the waveform with volume and pitch
         float sampleValue = 0.0;  // Initialize the sample value
-
         for (int j = 0; j < numOscillatorCycles; ++j) 
         {
             // Generate the sample by summing oscillators with different phases
-            sampleValue += sin(phase);
-            
+            sampleValue += sinf(phase);
             // Update the phase for the next sample
             phase += angularFrequency / sampleRate;
         }
+        
 
         // Normalize the sample value
         sampleValue /= numOscillatorCycles;
 
         // Apply volume envelope to the sample
         sampleValue *= volumeEnvelope;
-
+        if (trigger)
+            counting = true;
+        if (counting)
+            count++;
+        if (count > volumeDecay*48)
+        {    
+            counting = false;
+            count = 0.f;
+        }
         // Store the sample in the buffer
         return sampleValue;
     

@@ -13,8 +13,8 @@
         "${workspaceFolder}/**",
         "${workspaceFolder}/../../DaisyExamples/libDaisy//**",
         "${workspaceFolder}/../../DaisyExamples/DaisySP//**",
-        "${workspaceFolder}/../EZ_DSP//**",
-        "${workspaceFolder}/../LED_Matrix_Lib//**"
+        "${workspaceFolder}/../EZ_DSP//**"
+
 
       ],
       "name": "Win32",
@@ -33,8 +33,8 @@
         "${workspaceFolder}/**",
         "${workspaceFolder}/../../DaisyExamples/libDaisy//**",
         "${workspaceFolder}/../../DaisyExamples/DaisySP//**",
-        "${workspaceFolder}/../EZ_DSP//**",
-        "${workspaceFolder}/../LED_Matrix_Lib//**"
+        "${workspaceFolder}/../EZ_DSP//**"
+
       ],
       "name": "macOS"
     }
