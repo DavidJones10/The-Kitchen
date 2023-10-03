@@ -8,8 +8,10 @@
 using namespace daisy;
 using namespace daisysp;
 
-constexpr Pin BUTTONS = seed::D15;
+constexpr Pin BUTTONS  = seed::D15;
 constexpr Pin SELECTOR = seed::D16;
+constexpr Pin ON_OFF   = seed::D17;
+constexpr Pin TEMPO    = seed::D18;
 
 static DaisySeed hw;
 static AdcHandle adc;
@@ -41,23 +43,22 @@ bool hats[4] = {false, false, false, false};
 bool synths[4] = {false, false, false, false};
 
 int step=0;
+bool globalTick;
+bool audio_ON = true;
+float tempoKnobValue, onSwitchValue;
 uint32_t debounceDelay = 100000; // 100000us 100ms
 uint32_t lastDebounceTime = 0;
 
 float delFeedback = .5f, delTime = .25f*48000, delWet = .5f;
 //====================================================================================
-// maps input of 0-1 to number between min and max
-float myfmap(float in, float min, float max)
-{
-	return EZ_DSP::fclamp(min + in * (max - min), min, max);
-}
+
 
 //====================================================================================
 // gets button press for a specific button in the ladder
 bool isButtonPressed(int buttonIdx)
 {
 	buttonValue = hw.adc.GetFloat(0);
-	buttonValue = myfmap(buttonValue, 0, 3300); // maps 0-1 value to milliamp values
+	buttonValue = EZ_DSP::fmap(buttonValue, 0, 3300); // maps 0-1 value to milliamp values
 	if (buttonValue < 1850 && buttonIdx == 0)
 		return true;
 	if (buttonValue > 1850 && buttonValue < 2000 && buttonIdx == 1)
@@ -131,6 +132,22 @@ void digitalButtons()
 	}
 }
 //====================================================================================
+void processKnobAndSwitch()
+{
+	tempoKnobValue = hw.adc.GetFloat(1);
+	onSwitchValue = hw.adc.GetFloat(2);
+	//Audio on/off switch
+	if (onSwitchValue < .5f)
+		audio_ON = true;
+	else	
+		audio_ON = false;
+
+	//knob stuff
+	float bpmValue = EZ_DSP::fmap(tempoKnobValue, 30.f, 250.f);
+	float msValue = EZ_DSP::bpmToHz(bpmValue, NUM_STEPS*2); // for now so its faster
+	tick.SetFreq(msValue);
+}
+//====================================================================================
 // initializes drums
 void initDrums()
 {
@@ -148,9 +165,11 @@ void initControls()
 {
 	selector.Init(SELECTOR,hw.AudioCallbackRate());
 	initDrums();
-	AdcChannelConfig cfg;
-	cfg.InitSingle(BUTTONS);
-	hw.adc.Init(&cfg,1);
+	AdcChannelConfig cfg[3];
+	cfg[0].InitSingle(BUTTONS);
+	cfg[1].InitSingle(TEMPO);
+	cfg[2].InitSingle(ON_OFF);
+	hw.adc.Init(cfg,3);
 	hw.adc.Start();
 }
 /*
@@ -195,6 +214,7 @@ float processSequencer()
 		step = step % NUM_STEPS;
 		setDrumParams();
 	}
+	globalTick = t;
 	return totalOut;
 	
 	/*
@@ -214,9 +234,13 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, s
 {
 	processButtons();// processes button voltage ladder
 	digitalButtons();// processes drum selector button
+	processKnobAndSwitch();
 	for (size_t i = 0; i < size; i++)
 	{		
-		out[0][i] = out[1][i] = processSequencer();
+		if (audio_ON)
+			out[0][i] = out[1][i] = processSequencer();
+		else	
+			out[0][i] = out[1][i] = 0.f;
 	}
 }
 //====================================================================================
@@ -232,11 +256,8 @@ int main(void)
 	hw.StartAudio(AudioCallback);
 	for (;;)
 	{
+		hw.SetLed(globalTick);
 		// simple test to see if drum selector button works, if button pressed, on board led lights up
-		if (selector.Pressed())
-			hw.SetLed(true);
-		else
-			hw.SetLed(false);
 		//System::Delay(100);
 		//processButtons();
 		//ledMatrix();

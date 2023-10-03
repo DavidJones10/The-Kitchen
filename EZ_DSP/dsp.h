@@ -38,7 +38,7 @@ namespace EZ_DSP
     {
         return fmin(fmax(in,min),max);
     }    
-
+    // max, min and clamp for integers
    inline int maxInt(int a, int b)
     {
         int max;
@@ -63,6 +63,12 @@ namespace EZ_DSP
     {
         return minInt(maxInt(in,min), max);
     }
+    // maps a float input to values between float mininmum and maximum
+    // assumes 0-1 input
+    inline float fmap(float in, float min, float max)
+    {
+	    return fclamp(min + in * (max - min), min, max);
+    }
 
 
     /*
@@ -77,7 +83,21 @@ namespace EZ_DSP
     */
    inline void fonepole(float &out, float in, float coeff)
    {
-    out += coeff * (in - out);
+        out += coeff * (in - out);
+   }
+
+   float bpmToMs(float bpm)
+   {
+        bpm = fclamp(bpm, 30.f, 250.f);
+        float milliseconds = 60000.0 / (bpm);
+        return milliseconds;
+   }
+
+   float bpmToHz(float bpm, int numSteps)
+   {
+    float Hz = bpm / 60.f;
+    Hz *= (numSteps/4);
+    return Hz;
    }
 
 
