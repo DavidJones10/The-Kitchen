@@ -42,21 +42,13 @@ namespace EZ_DSP
    inline int maxInt(int a, int b)
     {
         int max;
-        #ifdef __arm__
-            asm("smax %[d], %[n], %[m]" : [d] "=r"(max) : [n] "r"(a), [m] "r"(b));
-        #else
-            max = (a > b) ? a : b;
-        #endif // __arm__
+        max = (a > b) ? a : b;
         return max;
     }
     inline int minInt(int a, int b)
     {
         int min;
-        #ifdef __arm__
-            asm("smin %[d], %[n], %[m]" : [d] "=r"(min) : [n] "r"(a), [m] "r"(b));
-        #else
-            min = (a < b) ? a : b;
-        #endif // __arm__
+        min = (a < b) ? a : b;
         return min;
     }
     inline int clampInt(int in, int min, int max)
@@ -68,6 +60,13 @@ namespace EZ_DSP
     inline float fmap(float in, float min, float max)
     {
 	    return fclamp(min + in * (max - min), min, max);
+    }
+    // scales an input range to values between outMin and outMax
+    inline float fScale(float in, float inMin, float inMax, float outMin, float outMax)
+    {
+        in = fclamp(in, inMin, inMax);
+        float scaledValue = outMin + ((in - inMin) / (inMax-inMin) * (outMax - outMin));
+        return scaledValue;
     }
 
 
@@ -86,18 +85,18 @@ namespace EZ_DSP
         out += coeff * (in - out);
    }
 
-   float bpmToMs(float bpm)
+   inline float bpmToMs(float bpm)
    {
         bpm = fclamp(bpm, 30.f, 250.f);
         float milliseconds = 60000.0 / (bpm);
         return milliseconds;
    }
 
-   float bpmToHz(float bpm, int numSteps)
+   inline float bpmToHz(float bpm, int numSteps)
    {
-    float Hz = bpm / 60.f;
-    Hz *= (numSteps/4);
-    return Hz;
+        float Hz = bpm / 60.f;
+        Hz *= (numSteps/4);
+        return Hz;
    }
 
 

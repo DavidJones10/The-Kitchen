@@ -10,9 +10,9 @@ using namespace daisysp;
 
 constexpr Pin BUTTONS     = seed::D15;
 constexpr Pin SELECTOR    = seed::D16;
-constexpr Pin STEP_MODE   = seed::D17;
+constexpr Pin TEMPO_MULT   = seed::D17;
 constexpr Pin TEMPO       = seed::D18;
-constexpr Pin TAP_TEMPO   = seed::D19;
+constexpr Pin TEMPO_MOD   = seed::D19;
 
 static DaisySeed hw;
 static AdcHandle adc;
@@ -24,7 +24,7 @@ enum drumModes
 };
 
 int drumMode = 0;
-Switch selector, tapTempo;
+Switch selector, tempoModON;// selector: Drum sound changes when pressed, tempoModOn: holding down doubles or halves tempo
 float buttonValue;
 
 //====================================================================================
@@ -45,8 +45,8 @@ bool synths[8] = {false, false, false, false, false, false, false, false};
 
 int step=0;
 bool patternIn = false;
-bool stepMode = true; //true = sequencer, false = use tap
-float tempoKnobValue, onSwitchValue;
+bool tempoMode = true; //true = Double Time when timeMod pressed, false = half-time
+float tempoKnobValue, onSwitchValue, tempoMult;
 uint32_t debounceDelay = 100000; // 100000us 100ms
 uint32_t lastDebounceTime = 0;
 
@@ -142,18 +142,22 @@ void setDrumParams()
 void digitalButtons()
 {
 	selector.Debounce();
-	tapTempo.Debounce();
+	tempoModON.Debounce();
 	if (selector.RisingEdge())
 	{
 		drumMode++;
 		drumMode = drumMode % 4;
 	}
-	if (tapTempo.RisingEdge())
+	if (tempoModON.Pressed())
 	{
-		step++;
-		step = step % NUM_STEPS;
+		if (tempoMode)
+			tempoMult = 2.f;
+		else
+			tempoMult = .5f;
 	}
-	if (selector.TimeHeldMs() > 2000.f && tapTempo.TimeHeldMs() > 2000)
+	else	
+		tempoMult = 1.f;
+	if (selector.TimeHeldMs() > 2000.f && tempoModON.TimeHeldMs() > 2000)
 		clearPattern();
 
 }
@@ -164,13 +168,13 @@ void processKnobAndSwitch()
 	onSwitchValue = hw.adc.GetFloat(2);
 	// changes mode between sequencer and button mash
 	if (onSwitchValue > .5f)
-		stepMode = true;
+		tempoMode = true;
 	else	
-		stepMode = false;
+		tempoMode = false;
 
 	//knob stuff
 	float bpmValue = EZ_DSP::fmap(tempoKnobValue, 30.f, 250.f);
-	float msValue = EZ_DSP::bpmToHz(bpmValue, NUM_STEPS); 
+	float msValue = EZ_DSP::bpmToHz(bpmValue * tempoMult, NUM_STEPS); 
 	tick.SetFreq(msValue);
 }
 //====================================================================================
@@ -190,12 +194,12 @@ void initDrums()
 void initControls()
 {
 	selector.Init(SELECTOR,hw.AudioCallbackRate());
-	tapTempo.Init(TAP_TEMPO,hw.AudioCallbackRate());
+	tempoModON.Init(TEMPO_MOD,hw.AudioCallbackRate());
 	initDrums();
 	AdcChannelConfig cfg[3];
 	cfg[0].InitSingle(BUTTONS);// button array
 	cfg[1].InitSingle(TEMPO);//knob
-	cfg[2].InitSingle(STEP_MODE);// switch
+	cfg[2].InitSingle(TEMPO_MULT);// switch
 	hw.adc.Init(cfg,3);
 	hw.adc.Start();
 }
@@ -221,10 +225,7 @@ float processSequencer()
     float hatOut = 0.0f;
     float synthOut = 0.0f;
 	bool t;
-	if (stepMode)
-		t = tick.Process();
-	else 
-		t = tapTempo.RisingEdge();
+	t = tick.Process();
 	
     // Process each drum sound individually and accumulate their outputs
     kickOut = kick.Process(kicks[step] && t);
@@ -233,20 +234,17 @@ float processSequencer()
     synthOut = synthKick.Process(synths[step] && t);
 
     // Sum the outputs of the drum sounds with their respective gain controls
-    float kickVolume = 5.f; // Adjust the volume as needed
+    float kickVolume = 1.f; // Adjust the volume as needed
     float snareVolume = 0.5f;
-    float hatVolume = 0.5f;
+    float hatVolume = 5.5f;
     float synthVolume = 0.5f;
 
     totalOut = kickOut * kickVolume + snareOut * snareVolume + hatOut * hatVolume + synthOut * synthVolume;
-	if (stepMode)
+	if (t)
 	{
-		if (t)
-		{
-			step++;
-			step = step % NUM_STEPS;
-			setDrumParams();
-		}
+		step++;
+		step = step % NUM_STEPS;
+		setDrumParams();
 	}
 	return totalOut;
 	

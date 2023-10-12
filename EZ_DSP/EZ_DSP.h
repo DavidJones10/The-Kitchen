@@ -9,8 +9,7 @@
 #include "phaser.h"
 #include "oscillator.h"
 #include "tremolo.h"
-#include "kickDrum.h"
-#include "JOEoscillator.h"
+
 
 
 #endif

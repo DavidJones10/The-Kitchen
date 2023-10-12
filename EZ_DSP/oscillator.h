@@ -28,9 +28,9 @@ public:
      */
     inline void setFreq(float freq) {frequency = freq;}
     /** Sets the wave type for the oscillator
-     * @param type wave type- 1:SIN, 2:TRI, 3:SAW, 4:SQUARE
+     * @param type wave type- 0:SIN, 1:TRI, 2:SAW, 3:SQUARE
      */
-    inline void setWaveType(u_int8_t type) {waveType = type < LAST ? type : SIN;}
+    inline void setWaveType(uint8_t type) {waveType = type < LAST ? type : SIN;}
     /** Sets pulse width for square waveform 
      * @param pw expects 0-1
      */
@@ -55,7 +55,7 @@ public:
 private:
     float amplitude, frequency, pulseWidth, sampleRate, phase, phaseInc;
     bool endOfRise_, endOfCycle_;
-    u_int8_t waveType;
+    uint8_t waveType;
 
     float getPhaseInc(float freq) {return freq/sampleRate;};
 

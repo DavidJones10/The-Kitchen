@@ -80,10 +80,10 @@ public:
     */
     inline const sampleType allpass(const sampleType sample, size_t delay, const sampleType coefficient)
     {
-        sampleType read = delLine[writePtr+delay] % maxSize;
-        sampleType write = sample + coefficient * read;
-        write(write);
-        return -write * coefficient + read;
+        sampleType read = delLine[(writePtr+delay) % maxSize];
+        sampleType writeSample = sample + coefficient * read;
+        write(writeSample);
+        return -writeSample * coefficient + read;
     }
     
 private:
