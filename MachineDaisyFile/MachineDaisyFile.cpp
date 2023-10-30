@@ -34,7 +34,7 @@ HiHat<SquareNoise, LinearVCA, true> hat;
 SyntheticBassDrum synthKick;
 SyntheticSnareDrum snare;
 AdEnv kickEnv, snareEnv, hatEnv, synthEnv;
-//EZ_DSP::DelayLine<float, MAX_DELAY> DSY_SDRAM_BSS del;
+EZ_DSP::DelayLine<float, MAX_DELAY> DSY_SDRAM_BSS del;
 
 //EZ_DSP::kickDrum ourKick;
 
@@ -254,9 +254,10 @@ float processSequencer()
 	delOut = del.read();
 	fback = (delOut * delFeedback) + totalOut;
 	del.write(fback);
-	outL += totalOut*(1-delWet) + delOut*delWet;
-	outR += totalOut*(1-delWet) + delOut*delWet;
+	totalOut += totalOut*(1-delWet) + delOut*delWet;
+	return totalOut;
 	*/
+	
 	
 }
 
@@ -279,7 +280,7 @@ int main(void)
 	hw.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_32KHZ); // set to 32khz because 48khz is too fast for all of the drum classes at once
 	//hw.StartLog(true);
 	hw.SetLed(false);
-	//del.setDelay(delTime);
+	del.setDelay(delTime);
 	initControls();
 	hw.StartAudio(AudioCallback);
 	for (;;)
