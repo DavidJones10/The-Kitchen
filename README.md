@@ -1,3 +1,3 @@
 # CapstoneDrumMachine
-A Microcontroller-based drum machine built on the daisy seed MCU platform.
+A Microcontroller-based drum machine built using RNBO embedded on a Raspberry Pi.
 This repo also includes the EZ_DSP library for real-time audio effects processing.
