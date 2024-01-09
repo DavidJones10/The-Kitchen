@@ -11,6 +11,17 @@
 #define HALFPI_F (PI_F * 0.5f)
 namespace EZ_DSP 
 {
+    enum class FilterType
+    {
+        LOWPASS,
+        HIGHPASS,
+        BANDPASS,
+        NOTCH,
+        LOWSHELF,
+        HIGHSHELF,
+        PEAK
+    };
+
     // fast maximum and minimum for floats, uses assembly if arm architecture
     inline float fmax(float a, float b)
     {
@@ -97,6 +108,11 @@ namespace EZ_DSP
         float Hz = bpm / 60.f;
         Hz *= (numSteps/4);
         return Hz;
+   }
+
+   inline float dBToLinear(float dB)
+   {
+        return pow(10.0f, dB / 40.0f);
    }
 
 

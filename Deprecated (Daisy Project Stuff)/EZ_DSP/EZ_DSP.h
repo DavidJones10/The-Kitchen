@@ -9,7 +9,6 @@
 #include "phaser.h"
 #include "oscillator.h"
 #include "tremolo.h"
-
-
+#include "biquad.h"
 
 #endif

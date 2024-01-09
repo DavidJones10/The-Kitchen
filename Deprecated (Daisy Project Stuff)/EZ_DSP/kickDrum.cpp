@@ -1,4 +1,5 @@
 #include "kickDrum.h"
+/*
 #include "JOEoscillator.h"
 
 using namespace EZ_DSP;
@@ -117,6 +118,6 @@ float kickDrum::generateAudio(bool trigger)
         return sampleValue;
     
 }
-
+*/
 
 
