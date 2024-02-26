@@ -1,0 +1,76 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;\f2\froman\fcharset0 Times-Roman;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red56\green185\blue199;\red11\green12\blue12;
+\red11\green12\blue12;}
+{\*\expandedcolortbl;;\csgray\c0;\cssrgb\c25546\c77007\c82023;\cssrgb\c4706\c5098\c5490;
+\cssrgb\c4706\c5098\c5490;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Steps for screen configuration:\
+\
+Edit /boot/config.txt\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf2 \CocoaLigature0 dtparam=spi=on\
+\cf3 # Uncomment some or all of these to enable the optional hardware interfaces\cf2 \
+dtparam=i2c_arm=on\
+\cf3 #dtparam=i2s=on\cf2 \
+dtparam=spi=on\
+\cf3 # Enable SPI1\cf2 \
+dtoverlay=fbtft,spi0-0,ili9341\
+dtparam=dc_pin=23\
+dtparam=reset_pin=24\
+dtparam=led_pin=15\
+dtparam=rotate=90\
+dtparam=fps=30\
+dtparam=bgr=on\
+dtparam=width=240\
+dtparam=height=320\
+dtoverlay=spi1-2cs #activates spi1 bus\
+\
+\cf3 #dtoverlay=vc4-kms-v3d make sure this is commented out\
+\
+Try:\
+    \cf2 export DISPLAY=:0\
+    echo $DISPLAY #should display :0. If it doesn\'92t, pygame will throw an error\
+Maybe:\
+    \
+\pard\pardeftab720\partightenfactor0
+
+\f2\fs24 \cf4 \expnd0\expndtw0\kerning0
+\CocoaLigature1 See if x11 is active:\
+	\cf5 \outl0\strokewidth0 \strokec5 systemctl status x11-common\
+
+\f1\fs22 \cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 \outl0\strokewidth0 If not try this:\
+\pard\pardeftab720\partightenfactor0
+
+\f2\fs24 \cf5 \expnd0\expndtw0\kerning0
+\CocoaLigature1 \outl0\strokewidth0 \strokec5 	file /lib/systemd/system/x11-common.service\
+\
+That might return this:\
+	/lib/systemd/system/x11-common.service: symbolic link to /dev/null\
+	\
+If it does run this:\
+     	sudo rm /lib/systemd/system/x11-common.service\
+	sudo systemctl daemon-reload\
+	systemctl status x11-common\
+If it is still dead or inactive run this:\
+	sudo apt-get install --reinstall x11-common\
+	sudo systemctl daemon-reload\
+Check active again:\
+	systemctl status x11-common\
+\
+Once its active you can use these commands to make your display work in pygame:\
+	
+\f1\fs22 \cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 \outl0\strokewidth0 export DISPLAY=:0\
+	echo $DISPLAY # this should return :0
+\f2\fs24 \cf5 \expnd0\expndtw0\kerning0
+\CocoaLigature1 \outl0\strokewidth0 \strokec5 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+}
