@@ -1,0 +1,120 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\csgray\c0;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs22 \cf2 \CocoaLigature0 import pygame\
+\
+BLACK = (0, 0, 0)\
+WHITE = (255, 255, 255)\
+RED = (255, 0, 0)\
+HIGHLIGHT = (200, 200, 200)\
+BACKGROUND = (130, 130, 140)\
+\
+SCREEN_WIDTH = 320\
+SCREEN_HEIGHT = 240\
+SQUARE_SIZE = 20\
+CIRCLE_RADIUS = 10\
+GRID_WIDTH = 8\
+GRID_HEIGHT = 7\
+PADDING = 10\
+\
+trig1 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trig2 = [1, 1, 1, 1, 0, 0, 0, 0]\
+trig3 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trig4 = [1, 1, 1, 1, 0, 0, 0, 0]\
+trig5 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trig6 = [1, 1, 1, 1, 0, 0, 0, 0]\
+trig7 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trigs = [trig1, trig2, trig3, trig4, trig5, trig6, trig7]\
+drumMode = 1\
+\
+class Display():\
+    def __init__(self,speed=2):\
+        pygame.init()\
+        infoObject = pygame.display.Info()\
+        self.width = infoObject.current_w\
+        self.height = infoObject.current_h\
+        self.screen = pygame.display.set_mode((self.width,self.height),pygame.FULLSCREEN)\
+        pygame.display.set_caption("The Kitchen V1")\
+        pygame.mouse.set_visible(False)\
+        self.rect_width = 50\
+        self.rect_height = 50\
+        self.rect_x = self.width // 2 - self.rect_width //2\
+        self.rect_y = self.height // 2 - self.rect_height // 2\
+        self.speed = speed\
+        self.grid = DrumGrid(20,35)\
+  \
+    def draw(self,drum_arrays,drum_mode):\
+        self.rect_x += self.speed\
+\
+        if self.rect_x > self.width:\
+            self.rect_x = -self.rect_width\
+\
+        self.screen.fill(BACKGROUND)\
+\
+        #pygame.draw.rect(self.screen, (0,0,0), (self.rect_x, self.rect_y, self.rect_width, self.rect_height))\
+        self.grid.update(drum_arrays,drum_mode.value)\
+        self.grid.draw(self.screen)\
+        pygame.display.flip()\
+\
+        pygame.time.Clock().tick(60)\
+\
+\
+\
+\
+class Toggle:\
+    def __init__(self, x, y,is_circle=False):\
+        self.x = x\
+        self.y = y\
+        self.state = False\
+        self.is_circle = is_circle\
+\
+    def draw(self, surface):\
+        color = RED if self.state else WHITE\
+        if not self.is_circle:\
+            pygame.draw.rect(surface, color, (self.x, self.y, SQUARE_SIZE, SQUARE_SIZE))\
+            pygame.draw.rect(surface, BLACK, (self.x, self.y, SQUARE_SIZE, SQUARE_SIZE), 2)  # Outline\
+        else:\
+            pygame.draw.circle(surface, color, (self.x, self.y), CIRCLE_RADIUS)\
+            pygame.draw.circle(surface, BLACK, (self.x, self.y), CIRCLE_RADIUS, 2)  # Outline\
+class DrumRow:\
+    def __init__(self, x, y,circles=False):\
+        self.x = x\
+        self.y = y\
+        self.active = False\
+        if circles:\
+            self.toggles = [Toggle(x + CIRCLE_RADIUS + (2*CIRCLE_RADIUS + PADDING) * i, y,circles) for i in range(GRID_WIDTH)]\
+        else:\
+            self.toggles = [Toggle(x + (SQUARE_SIZE + PADDING) * i, y,circles) for i in range(GRID_WIDTH)]\
+    def update(self, triggers):\
+        for toggle, trigger in zip(self.toggles, triggers):\
+            toggle.state = trigger\
+\
+    def draw(self, surface):\
+        if self.active:\
+            pygame.draw.rect(surface,HIGHLIGHT, (self.x-5, self.y-5, self.x+(SQUARE_SIZE + PADDING) * 7 + 10,SQUARE_SIZE+10))\
+        for toggle in self.toggles:\
+            toggle.draw(surface)\
+\
+class DrumGrid:\
+    def __init__(self, x, y, circles=False):\
+        self.x = x\
+        self.y = y\
+        if circles:\
+            self.rows = [DrumRow(x,y + CIRCLE_RADIUS+(2*CIRCLE_RADIUS + PADDING) * i, circles) for i in range(GRID_HEIGHT)]\
+        else:\
+            self.rows = [DrumRow(x,y +(SQUARE_SIZE + PADDING) * i, circles) for i in range(GRID_HEIGHT)]\
+\
+    def update(self,arrays,drum_mode):\
+        for i,(arr,row) in enumerate(zip(arrays,self.rows)):\
+            if i == drum_mode:\
+                row.active = True\
+            else:\
+                row.active = False \
+            row.update(arr)\
+    def draw(self,surface):\
+        for row in self.rows:\
+            row.draw(surface) }
