@@ -2,10 +2,10 @@
 \cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;\f2\froman\fcharset0 Times-Roman;
 }
 {\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red56\green185\blue199;\red11\green12\blue12;
-\red11\green12\blue12;}
+}
 {\*\expandedcolortbl;;\csgray\c0;\cssrgb\c25546\c77007\c82023;\cssrgb\c4706\c5098\c5490;
-\cssrgb\c4706\c5098\c5490;}
-\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+}
+\margl1440\margr1440\vieww13520\viewh9160\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 
 \f0\fs24 \cf0 Steps for screen configuration:\
@@ -42,13 +42,12 @@ Maybe:\
 
 \f2\fs24 \cf4 \expnd0\expndtw0\kerning0
 \CocoaLigature1 See if x11 is active:\
-	\cf5 \outl0\strokewidth0 \strokec5 systemctl status x11-common\
+	\cf4 systemctl status x11-common\
 
-\f1\fs22 \cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 \outl0\strokewidth0 If not try this:\
-\pard\pardeftab720\partightenfactor0
+\f1\fs22 \cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 If not try this:\
 
-\f2\fs24 \cf5 \expnd0\expndtw0\kerning0
-\CocoaLigature1 \outl0\strokewidth0 \strokec5 	file /lib/systemd/system/x11-common.service\
+\f2\fs24 \cf4 \expnd0\expndtw0\kerning0
+\CocoaLigature1 	file /lib/systemd/system/x11-common.service\
 \
 That might return this:\
 	/lib/systemd/system/x11-common.service: symbolic link to /dev/null\
@@ -65,12 +64,12 @@ Check active again:\
 \
 Once its active you can use these commands to make your display work in pygame:\
 	
-\f1\fs22 \cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 \outl0\strokewidth0 export DISPLAY=:0\
+\f1\fs22 \cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 export DISPLAY=:0\
 	echo $DISPLAY # this should return :0
-\f2\fs24 \cf5 \expnd0\expndtw0\kerning0
-\CocoaLigature1 \outl0\strokewidth0 \strokec5 \
+\f2\fs24 \cf4 \expnd0\expndtw0\kerning0
+\CocoaLigature1 \
 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
 
-\f0 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\f0 \cf0 \kerning1\expnd0\expndtw0 \
 }
