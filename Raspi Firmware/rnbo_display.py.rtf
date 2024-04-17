@@ -2,29 +2,34 @@
 \cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
 {\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
 {\*\expandedcolortbl;;\csgray\c0;}
-\margl1440\margr1440\vieww16060\viewh13200\viewkind0
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
 
 \f0\fs22 \cf2 \CocoaLigature0 import pygame\
-from extra_rnbo import myMap\
-import math\
 \
 BLACK = (0, 0, 0)\
-DARK_GRAY = (50,50,50)\
 WHITE = (255, 255, 255)\
 RED = (255, 0, 0)\
 HIGHLIGHT = (200, 200, 200)\
 BACKGROUND = (130, 130, 140)\
-STEPLIGHT = (200,200,255)\
-NICE_BLUE = (0, 25, 255)\
+\
 SCREEN_WIDTH = 320\
 SCREEN_HEIGHT = 240\
 SQUARE_SIZE = 20\
-CIRCLE_RADIUS = 7\
+CIRCLE_RADIUS = 10\
 GRID_WIDTH = 8\
 GRID_HEIGHT = 7\
 PADDING = 10\
-KNOB_RADIUS = 30\
+\
+trig1 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trig2 = [1, 1, 1, 1, 0, 0, 0, 0]\
+trig3 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trig4 = [1, 1, 1, 1, 0, 0, 0, 0]\
+trig5 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trig6 = [1, 1, 1, 1, 0, 0, 0, 0]\
+trig7 = [0, 1, 1, 1, 0, 0, 1, 1]\
+trigs = [trig1, trig2, trig3, trig4, trig5, trig6, trig7]\
+drumMode = 1\
 \
 class Display():\
     def __init__(self,speed=2):\
@@ -40,33 +45,19 @@ class Display():\
         self.rect_x = self.width // 2 - self.rect_width //2\
         self.rect_y = self.height // 2 - self.rect_height // 2\
         self.speed = speed\
-        self.pages = Pages(0)\
-        self.bpm = Text("BPM: 120")\
-        self.loop = Toggle(10,10,True,"Loop Rec")\
-        self.fill = Toggle(70,10,True,"Fill Mode")\
-        self.djm = Toggle(127,10,True,"DJM Mode")\
-        self.fx = Text("FX: Delay")\
-    def draw(self,drum_arrays,drum_mode,value_array,screen_mode):\
+        self.grid = DrumGrid(20,35)\
+  \
+    def draw(self,drum_arrays,drum_mode):\
         self.rect_x += self.speed\
 \
         if self.rect_x > self.width:\
             self.rect_x = -self.rect_width\
 \
         self.screen.fill(BACKGROUND)\
-        bpm = value_array[1]\
-        self.pages.page = screen_mode.value\
-        self.pages.draw(self.screen,drum_arrays,value_array,drum_mode)\
-        self.bpm.set_text("BPM: " + str(bpm))\
-        self.bpm.draw(self.screen,263,5)\
-        self.loop.state = value_array[35]\
-        self.loop.draw(self.screen)\
-        self.fill.state = value_array[2]\
-        self.fill.draw(self.screen)\
-        self.djm.state = value_array[3]\
-        self.djm.draw(self.screen)\
-        self.fx.set_text("FX: " + fx_mode_text(value_array[36]))\
-        self.fx.draw(self.screen,187,5)\
-        \
+\
+        #pygame.draw.rect(self.screen, (0,0,0), (self.rect_x, self.rect_y, self.rect_width, self.rect_height))\
+        self.grid.update(drum_arrays,drum_mode.value)\
+        self.grid.draw(self.screen)\
         pygame.display.flip()\
 \
         pygame.time.Clock().tick(60)\
@@ -75,12 +66,11 @@ class Display():\
 \
 \
 class Toggle:\
-    def __init__(self, x, y,is_circle=False,label=None):\
+    def __init__(self, x, y,is_circle=False):\
         self.x = x\
         self.y = y\
         self.state = False\
         self.is_circle = is_circle\
-        self.label = Text(label)\
 \
     def draw(self, surface):\
         color = RED if self.state else WHITE\
@@ -90,8 +80,6 @@ class Toggle:\
         else:\
             pygame.draw.circle(surface, color, (self.x, self.y), CIRCLE_RADIUS)\
             pygame.draw.circle(surface, BLACK, (self.x, self.y), CIRCLE_RADIUS, 2)  # Outline\
-        if self.label:\
-            self.label.draw(surface,self.x+ CIRCLE_RADIUS+1,self.y-5)\
 class DrumRow:\
     def __init__(self, x, y,circles=False):\
         self.x = x\
@@ -107,7 +95,7 @@ class DrumRow:\
 \
     def draw(self, surface):\
         if self.active:\
-            pygame.draw.rect(surface,HIGHLIGHT, (self.x-5, self.y-5, self.x+(SQUARE_SIZE + PADDING) * 7 + 15,SQUARE_SIZE+10))\
+            pygame.draw.rect(surface,HIGHLIGHT, (self.x-5, self.y-5, self.x+(SQUARE_SIZE + PADDING) * 7 + 10,SQUARE_SIZE+10))\
         for toggle in self.toggles:\
             toggle.draw(surface)\
 \
@@ -119,17 +107,7 @@ class DrumGrid:\
             self.rows = [DrumRow(x,y + CIRCLE_RADIUS+(2*CIRCLE_RADIUS + PADDING) * i, circles) for i in range(GRID_HEIGHT)]\
         else:\
             self.rows = [DrumRow(x,y +(SQUARE_SIZE + PADDING) * i, circles) for i in range(GRID_HEIGHT)]\
-        self.labels = [Text("Text \{\}".format(i)) for i in range(8)]\
-        self.labels[0].set_text("Sample 1")\
-        self.labels[1].set_text("Sample 2")\
-        self.labels[2].set_text("Sample 3")\
-        self.labels[3].set_text("Sample 4")\
-        self.labels[4].set_text("Synth Kick")\
-        self.labels[5].set_text("Synth Snare")\
-        self.labels[6].set_text("Synth Cymbal")\
-        self.labels[7].set_text("Pattern")\
-        self.labels[7].set_color(RED)\
-        self.labels[7].set_size(25)\
+\
     def update(self,arrays,drum_mode):\
         for i,(arr,row) in enumerate(zip(arrays,self.rows)):\
             if i == drum_mode:\
@@ -137,231 +115,6 @@ class DrumGrid:\
             else:\
                 row.active = False \
             row.update(arr)\
-    def drawTexts(self,surface,value_array):\
-        for i in range(7):\
-            self.labels[i].draw(surface,250+5,43+(i*(SQUARE_SIZE+PADDING)))\
-        self.labels[7].draw(surface,100,17)\
-    def draw(self,surface,value_array):\
+    def draw(self,surface):\
         for row in self.rows:\
-            row.draw(surface) \
-        self.drawTexts(surface,value_array)\
-class Text:\
-    def __init__(self, text, font_size=10, font_name='arial', color=(255, 255, 255)):\
-        self.text = text\
-        self.font_size = font_size\
-        self.font_name = pygame.font.match_font(font_name)\
-        self.color = color\
-        self.font = pygame.font.SysFont(font_name, font_size)\
-        self.surface = self.font.render(text, True, color)\
-        self.rect = self.surface.get_rect()\
-\
-    def set_text(self, text):\
-        self.text = text\
-        self.surface = self.font.render(text, True, self.color)\
-\
-    def set_color(self, color):\
-        self.color = color\
-        self.surface = self.font.render(self.text, True, color)\
-\
-    def set_size(self, font_size):\
-        self.font_size = font_size\
-        self.font = pygame.font.SysFont(self.font_name, font_size)\
-        self.surface = self.font.render(self.text, True, self.color)\
-\
-    def set_bounds(self, width, height):\
-        self.rect.width = width\
-        self.rect.height = height\
-\
-    def draw(self, screen, x, y):\
-        self.rect.topleft = (x, y)\
-        screen.blit(self.surface, self.rect)\
-\
-def fx_mode_text(mode=0):\
-    if mode == 0:\
-        return "Distortion"\
-    if mode == 1:\
-        return "Delay"\
-    if mode == 2:\
-        return "Reverb"\
-    if mode == 3:\
-        return "Compressor"\
-    if mode == 4:\
-        return "Gate"\
-\
-class Pages:\
-    def __init__(self,start_page=0):\
-        self.page = start_page\
-        self.grid = DrumGrid(15,38)\
-        self.sound = SoundPage("Sample 1")\
-        self.fx = fxPage(0)\
-    def draw(self, surface,drum_arrays, value_array,drum_mode):\
-        if self.page == 0: #Pattern page\
-            self.grid.update(drum_arrays,drum_mode.value)\
-            self.grid.draw(surface,value_array)\
-        elif self.page == 1: #Sound Page\
-            self.sound.draw(surface,value_array,drum_mode.value)\
-        elif self.page == 2:\
-            self.fx.draw(surface,value_array)\
-class SoundPage:\
-    def __init__(self,drum_name,text_size=23):\
-        self.name = drum_name\
-        self.sound_label = Text(self.name,30,color=NICE_BLUE)\
-        self.atk = RotarySlider(70, 180,"Attack: ","ms")\
-        self.dec = RotarySlider(210, 180,"Decay: ","ms")\
-        self.pan = RotarySlider(70, 90,"Pan: ")\
-        self.pitch_b = RotarySlider(70, 190,"Pitch Beg: ","kHz")\
-        self.pitch_e = RotarySlider(210, 190,"Pitch End: ","kHz") \
-        self.warp = Text("Warp Ratio: ",text_size)\
-        self.warp_val = Text("1.0",text_size)\
-    def draw(self,surface, value_array,drum_mode):\
-        self.new_name(drum_mode)\
-        self.sound_label.set_text(self.name)\
-        i = 0\
-        if drum_mode < 4:\
-            i = 4 + drum_mode*4\
-            self.pan.x = 70\
-            self.atk.x = 70\
-            self.dec.x = 210\
-            self.dec.y = 180\
-            self.atk.y = 180\
-            self.warp_val.set_text("    "+str(round(value_array[i+2],4)))\
-            self.warp_val.draw(surface, 160,90)\
-            self.warp.draw(surface, 150, 65)\
-            self.pan.set_value(value_array[i+3],110,130)\
-        elif drum_mode > 3 and drum_mode < 7:\
-            i = 20 + (drum_mode-4)*5\
-            self.pan.x = 45\
-            self.atk.x = 145\
-            self.dec.x = 255\
-            self.dec.y = self.pan.y\
-            self.atk.y = self.pan.y\
-            self.pitch_b.set_value(round(value_array[i+2]*.001,2),.3,2.5) #Todo scale for each synth separately\
-            self.pitch_e.set_value(round(value_array[i+3]*.001,2),.3,2.5)\
-            self.pitch_b.draw(surface)\
-            self.pitch_e.draw(surface)\
-            self.pan.set_value(value_array[i+4],110,130)\
-        if drum_mode != 7:\
-            self.atk.set_value(round(value_array[i],2),0,500)\
-            self.dec.set_value(round(value_array[i+1],2),10,2000)\
-            self.atk.draw(surface)\
-            self.dec.draw(surface)\
-        self.sound_label.draw(surface,80, 25)\
-        if drum_mode == 7:\
-            self.pan.x = 70\
-        self.pan.draw(surface)\
-    def new_name(self, drum_mode):\
-        if drum_mode == 0:\
-            self.name = "Sample 1"\
-        elif drum_mode == 1:\
-            self.name = "Sample 2"\
-        elif drum_mode == 2:\
-            self.name = "Sample 3"\
-        elif drum_mode == 3:\
-            self.name = "Sample 4"\
-        elif drum_mode == 4:\
-            self.name = "Synth Kick"\
-        elif drum_mode == 5:\
-            self.name = "Synth Snare"\
-        elif drum_mode == 6:\
-            self.name = "Synth Cymbal"\
-        elif drum_mode == 7:\
-            self.name = "Looper"\
-class fxPage: \
-    def __init__(self,current_effect,label="Delay"):\
-        self.effect = current_effect\
-        self.label = Text(label,30,color=NICE_BLUE)\
-        self.param1 = RotarySlider(70,180,"")\
-        self.param2 = RotarySlider(210,180,"")\
-        self.wet = RotarySlider(70,90,"")\
-        self.swell = RotarySlider(210,90,"")\
-    def draw(self,surface,value_array):\
-        fx = value_array[36]\
-        self.label.set_text(fx_mode_text(fx))\
-        self.label.draw(surface,80,25)\
-        if fx == 1:\
-            self.param1.label="Time "\
-            self.param1.unit= "sec"\
-            self.param2.label="Feedback "\
-            self.wet.label="Wet "\
-            self.swell.label="Swell "\
-            self.param1.set_value(round(value_array[37],4),0,2000)\
-            self.param1.draw(surface)\
-            self.param2.set_value(round(value_array[38],2),0,1)\
-            self.param2.draw(surface) \
-            self.wet.set_value(round(value_array[39],2),0,1)\
-            self.wet.draw(surface) \
-        elif fx ==0:\
-            self.param1.label="Amount "\
-            self.param1.unit= ""\
-            self.param2.label="NONE"\
-            self.wet.label="Wet "\
-            self.swell.label="Swell "\
-            self.param1.set_value(round(value_array[40],2),1,150)\
-            self.param1.draw(surface)\
-            self.param2.set_value(round(value_array[49],2),0,1)\
-            self.param2.draw(surface) \
-            self.wet.set_value(round(value_array[41],2),0,1)\
-            self.wet.draw(surface) \
-        elif fx == 2:\
-            self.param1.label="Size "\
-            self.param1.unit= ""\
-            self.param2.label="NONE"\
-            self.wet.label="Wet "\
-            self.swell.label="Swell "\
-            self.param1.set_value(round(value_array[42],2),0,100)\
-            self.param1.draw(surface)\
-            self.param2.set_value(round(value_array[49],2),0,1)\
-            self.param2.draw(surface) \
-            self.wet.set_value(round(value_array[43],2),0,1)\
-            self.wet.draw(surface) \
-        elif fx == 3:\
-            self.param1.label="Attack "\
-            self.param1.unit= "ms"\
-            self.param2.label="Ratio "\
-            self.wet.label="Wet "\
-            self.swell.label="Swell "\
-            self.param1.set_value(round(value_array[49],2),0,50)\
-            self.param1.draw(surface)\
-            self.param2.set_value(round(value_array[49],2),0,1)\
-            self.param2.draw(surface) \
-            self.wet.set_value(round(value_array[49],2),0,1)\
-            self.wet.draw(surface) \
-        elif fx == 4:\
-            self.param1.label="Attack "\
-            self.param1.unit= "ms"\
-            self.param2.label="Presence "\
-            self.wet.label="Wet "\
-            self.swell.label="Swell "\
-            self.param1.set_value(round(value_array[49],2),0,50)\
-            self.param1.draw(surface)\
-            self.param2.set_value(round(value_array[49],2),0,1)\
-            self.param2.draw(surface) \
-            self.wet.set_value(round(value_array[49],2),0,1)\
-            self.wet.draw(surface) \
-        self.swell.set_value(round(value_array[46],2),0,1)\
-        self.swell.draw(surface) \
-class RotarySlider:\
-    def __init__(self, x, y, label=None, unit=""):\
-        self.x = x\
-        self.y = y\
-        self.value = 0  \
-        self.label = label\
-        self.unit = unit\
-        self.scaled = 0\
-    def draw(self, surface):\
-        pygame.draw.circle(surface, WHITE, (self.x, self.y), KNOB_RADIUS)\
-        knob_angle = math.radians(240 -self.scaled * 300)  # Adjust angle based on value\
-        knob_x = int(self.x + (KNOB_RADIUS) * math.cos(knob_angle))\
-        knob_y = int(self.y - (KNOB_RADIUS) * math.sin(knob_angle))\
-        pygame.draw.line(surface, BLACK, (self.x,self.y),(knob_x,knob_y),4)\
-       # Draw label if provided\
-        if self.label:\
-            txt = self.label+str(self.value)+self.unit\
-            font = pygame.font.SysFont(None, 20)\
-            text = font.render(txt, True, WHITE)\
-            surface.blit(text, (self.x-KNOB_RADIUS-10, self.y + KNOB_RADIUS +5))\
-\
-    def set_value(self, value, min_, max_):\
-        # Set value of the slider (clamped between 0 and 100)\
-        self.value = value\
-        self.scaled = myMap(value,min_,max_)}
+            row.draw(surface) }
