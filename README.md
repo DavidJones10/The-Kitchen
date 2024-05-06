@@ -3,7 +3,7 @@
 ## A Microcontroller-based drum machine and feedback looper built using RNBO embedded on a Raspberry Pi.
 This repo contains all the firmware and hardware for the instrument. This instrument was built as a Capstone project at Georgia Tech. The designers were David Jones, Ryan Ortwein, and Joe Walker. 
 
-### Our goal was to prove the efficacy of RNBO as a development environment for complex musical instruments. As far as we know, this is the furthest that RNBO has been pushed since its release in 2022. We believe that projects like ours could be the future of music instrument design. 
+Our goal was to prove the efficacy of RNBO as a development environment for complex musical instruments. As far as we know, this is the furthest that RNBO has been pushed since its release in 2022. We believe that projects like ours could be the future of music instrument design. 
 
 ## [link to demo video](https://youtu.be/1aXgyqzfzg8)
 
