@@ -7,6 +7,8 @@ Our goal was to prove the efficacy of RNBO as a development environment for comp
 
 ## [link to demo video](https://youtu.be/1aXgyqzfzg8)
 
+## The firmware on the Pi can be found [here](https://github.com/DavidJones10/The-Kitchen-Firmware)
+
 ## Final Enclosure Design
 ![plot](./Extras/The-Kitchen-Enclosure.png)
 
